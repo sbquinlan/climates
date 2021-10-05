@@ -1,0 +1,20 @@
+# top-most EditorConfig file
+root = true
+
+# Tab indentation (no size specified)
+[Makefile]
+indent_style = tab
+
+# Unix-style newlines with a newline ending every file
+[*]
+end_of_line = lf
+insert_final_newline = true
+
+# Set default charset
+[*.{js,py}]
+charset = utf-8
+
+# spacesss
+[*.{html,css,js,jsx,ts,tsx,json,yml,md,vue}]
+indent_style = space
+indent_size = 2
