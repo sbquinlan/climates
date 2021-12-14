@@ -1,14 +1,9 @@
-## What the fuck am I doing with this data?
+Ok I've combined 12 month averages into one tiff that's tiled. That should be queryable by byte range from JS / browser. The remaining work would be something like this:
 
-Ignoring adding a colormap and generating tiles to all the data, I also want to do point queries against the data.
+- Export some json from the tiff builder to explain how the data is laid out (what resolution / byte offsets / tile size etc)
+- Build the map + query from javascript to pull in the data.
+- Export a mask from the tiff builder to mask the nodata regions out of the point queries
 
-## Point Queries
+If we export the data to Cloudflare, then we'll need to break up the large file into smaller tile files so that they are under the limit, this will also need to be exported from the tiff builder.
 
-I thought about pumping all of the data into a database like the geo version of postgres, but I don't know what that gets me if I'm just doing point queries on gridded data. The tiff files with byte offsets are already the fastest indexing I can do for the data.
-
-## Tiff File Size
-
-The 10 min grid is 2160 by 1080. With the data type being Float32 that works out to be like 4 * 2160 * 1080 * N where N is the number of variables you want to query for file size, something like 2 MB per variable. 30 seconds would be 20 times that? No because there's two dimensions that get subdivided. So the grid would be like 2160 * 20 * 1080 * 20. So 400 * 2MB which is nearly a gig? Calculator says much more than a gig.
-
--- half the size by dropping precision
--- reduce size by doing compression
+If we want to look at the data rather than just do point queries, then we'll also need to build a color map + tiling pipeline with the tiff builder.
