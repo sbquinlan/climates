@@ -14,7 +14,13 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className={styles.main}>
-        <ClientSideMap center={[51.505, -0.09]} zoom={13} scrollWheelZoom={false} />
+        <ClientSideMap 
+          center={[51.505, -0.09]} 
+          zoom={3} 
+          minZoom={3}
+          maxZoom={12}
+          scrollWheelZoom={true} 
+        />
       </main>
     </div>
   )
