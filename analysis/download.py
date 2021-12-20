@@ -105,7 +105,6 @@ def extract_and_combine(res: str, var: str, vconfig):
       'compress': Compression.none.value,
 
       'tiled': True,
-      'blocksize': 128,
       'overviews': None
     })
 

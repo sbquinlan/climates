@@ -17,7 +17,7 @@ const Home: NextPage = () => {
         <ClientSideMap 
           center={[51.505, -0.09]} 
           zoom={3} 
-          minZoom={3}
+          minZoom={0}
           maxZoom={12}
           scrollWheelZoom={true} 
         />
