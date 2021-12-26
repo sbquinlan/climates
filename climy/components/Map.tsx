@@ -2,7 +2,6 @@ import type { LatLng, LeafletMouseEvent, MapOptions } from 'leaflet';
 import { Control, CRS, LatLngBounds, Map as LeafletMap, Polyline, TileLayer } from 'leaflet';
 import { useEffect, useRef, useState } from 'react';
 
-
 const OSM_COPYRIGHT = '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors';
 
 interface DimensionsType {
@@ -17,9 +16,9 @@ interface ConfigType {
   crs: CRSKey,
   
   dimensions: DimensionsType,
-  bands: number,
   tile_dim: number,
 
+  bands: number,
   // offset in bytes to get past the ifd and other headers
   data_offset: number,
   // datatype basically like uint16, not sure how to do that in javascript
@@ -183,22 +182,25 @@ function grid(step: {x: number, y: number}, bounds: LatLngBounds) {
   ]
 }
 
-
 export default function Map(props: MapOptions) {
-
   const map_ref = useRef<HTMLDivElement>(null)
   let [map, setMap] = useState<LeafletMap | null>(null)
   useEffect(() => {
     if (map_ref.current !== null && map == null) {
       const inner_map = new LeafletMap(map_ref.current, props);
       // const tiles = new TileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
-      const tiles = new TileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: 'abcd',
-        minZoom: 0,
-        maxZoom: 20
-      });
-      inner_map.addLayer(tiles);
+
+      const tmin = new TileLayer('/10m_tmin_1/{z}/{x}/{y}.png', { })
+      inner_map.addLayer(tmin)
+
+      // const base_tiles = new TileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      //   attribution: OSM_COPYRIGHT,
+      //   subdomains: 'abcd',
+      //   minZoom: 0,
+      //   maxZoom: 20
+      // });
+      // inner_map.addLayer(base_tiles);
+
       inner_map.addControl(new Control.Scale());
       inner_map.addEventListener(
         'click',
@@ -209,15 +211,13 @@ export default function Map(props: MapOptions) {
         },
       );
 
-      (new Polyline(
-        [
-          ... grid({x: 360/36, y: 180/18}, new LatLngBounds([-90, -180], [90, 180])),
-        ],
-        { 
-          lineCap: 'square',
-          weight: 1
-        }
-      )).addTo(inner_map);
+      // (new Polyline(
+      //   [ ... grid({x: 360/36, y: 180/18}, new LatLngBounds([-90, -180], [90, 180])), ],
+      //   { 
+      //     lineCap: 'square',
+      //     weight: 1
+      //   }
+      // )).addTo(inner_map);
 
       setMap(inner_map)
       return () => { }
