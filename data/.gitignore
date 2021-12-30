@@ -1,6 +1,7 @@
-output/
-data/
 *~
 .ipynb_checkpoints
 .venv/
 __pycache__/
+
+cache/
+webroot/
