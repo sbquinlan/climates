@@ -1,13 +1,11 @@
-from _typeshed import ReadableBuffer
 from abc import abstractmethod
 from itertools import product
 import json
 from os import makedirs
 from os.path import join
-from typing import Any, Callable, Generic, Iterator, List, NamedTuple, Tuple, TypeVar, final
+from typing import Any, Generic, Iterator, List, NamedTuple, Tuple, TypeVar, final
 
-from attr import attr, attrib, attrs
-import numpy
+from attr import attrib, attrs
 from rio_tiler.io.cogeo import COGReader
 from rio_tiler.models import ImageData
 
