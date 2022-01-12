@@ -32,7 +32,7 @@ def download(ctx):
 def tile(ctx):
   wc = WorldClim(**ctx.obj)
   wc.tiles()
-
+      
 @cli.command()
 @click.option('--webroot', default='webroot', type=click.Path(exists=False, file_okay=False, dir_okay=True))
 @click.option('--port', default=8000)
