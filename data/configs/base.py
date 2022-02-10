@@ -1,96 +1,81 @@
+
 from abc import abstractmethod
 from itertools import product
-import json
-from os import makedirs
-from os.path import join
-from typing import Any, Generic, Iterator, List, NamedTuple, Tuple, TypeVar, final
+from os import remove
+from os.path import exists, join, isdir
+from shutil import rmtree
+from typing import Generic, Iterator, List, Tuple, TypeVar
 
+import urllib3
 from attr import attrib, attrs
-from rio_tiler.io.cogeo import COGReader
-from rio_tiler.models import ImageData
 
-class TileJSON(NamedTuple):
-  name: str 
-  description: str
-  version: str
-  attribution: str
-  bounds: Tuple[float, float, float, float]
-  
-  tiles: List[str]
-  minzoom: int
-  maxzoom: int
-  
-  # not part of the spec
-  tilesize: int 
-
-  tilejson: str = "3.0.0"
-  scheme: str = "xyz"
-  vector_layers: List[Any] = []
-
-class Asset(NamedTuple):
-  name: str
-  description: str
-  version: str
-  attribution: str
-  bounds: Tuple[float, float, float, float]
-
-  bands: int
-  dtype: str
-  nodata: int
-
-  data_offset: int
-  tilesize: int
-
-def gen_tile_numbers(min_zoom: int, max_zoom: int) -> Iterator[Tuple[int, int, int]]:
-  return ((x,y,z) for z in range(min_zoom, max_zoom + 1) for (x, y) in product(range(2 ** z), range(2 ** z)))
-
-TBandConfig = TypeVar('TBandConfig')
+TBand = TypeVar('TBand')
 
 @attrs
-class BaseFactory(object):
+class Source(Generic[TBand]):
   cache: str = attrib()
   output: str = attrib()
 
   @abstractmethod
-  def clear_cache(self) -> None:
+  def _remote_file(self, band: TBand) -> str:
     ...
 
   @abstractmethod
-  def clear_build(self) -> None:
+  def bandname(self, band: TBand) -> str:
+    ...
+
+  def cache_file(self, band: TBand) -> str:
+    return join(self.cache, self.bandname(band))
+
+  ## kind of wierd here, but whatever
+  def output_dir(self, band: TBand) -> str:
+    return join(self.output, self.bandname(band))
+
+  @abstractmethod
+  def bands(self) -> List[TBand]:
     ...
 
   @abstractmethod
+  def cache_single_var(self, band: TBand, resp, cache_file: str) -> None:
+    ... 
+
   def load(self) -> None:
-    ...
+    http = urllib3.PoolManager()
+    for band in self.bands():
+      cache_file = self.cache_file(band)
+      if exists(cache_file):
+        continue
 
-class SupportsTiles(BaseFactory, Generic[TBandConfig]):
+      with http.request('GET', self._remote_file(band), preload_content=False) as resp:
+        self.cache_single_var(band, resp, cache_file)
+        resp.release_conn()
+    http.clear()
 
-  # returns the input file, output directory, and associated metadata
-  # for callbacks
-  @abstractmethod
-  def gen_tile_inputs(self) -> Iterator[Tuple[str, str, TBandConfig]]:
-    ...
-
-  # should write the imagedata to the path
-  @abstractmethod
-  def write_tile_image(self, vconfig: TBandConfig, path: str, img: ImageData) -> None:
-    ...
+  def clear(self) -> None:
+    for var in self.bands():
+      dir = self.cache_file(var)
+      if exists(dir) and isdir(dir):
+        rmtree(dir)
+      elif exists(dir):
+        remove(dir)
   
-  # creates a TileJSON for a completed tileset
-  @abstractmethod
-  def tilejson(self, vconfig: TBandConfig, cog: COGReader) -> TileJSON:
-    ...
+@attrs
+class AssetFactory(Generic[TBand]):
+  _source: Source[TBand] = attrib()
 
-  @final
-  def tiles(self) -> None:
-    for (input, output, vconfig) in self.gen_tile_inputs():
-      with COGReader(input) as cog:
-        for x, y, z in gen_tile_numbers(cog.minzoom, cog.maxzoom):
-          if not cog.tile_exists(x, y, z):
-            continue
-          path = join(output, str(z), str(x))
-          makedirs(path, exist_ok=True)
-          self.write_tile_image(vconfig, join(path, f'{y}.png'), cog.tile(x, y, z))
-        with open(join(output, 'tiles.json'), 'w') as tilejson:
-          tilejson.write(json.dumps( self.tilejson(vconfig, cog)._asdict() ))
-        
+  def cache(self) -> None:
+    self._source.load()
+
+  def clear_cache(self) -> None:
+    self._source.clear()
+
+  def clear_build(self) -> None:
+    for band in self._source.bands():
+      dir = self._source.output_dir(band)
+      if exists(dir) and isdir(dir):
+        rmtree(dir)
+      elif exists(dir):
+        remove(dir)
+
+def gen_tile_numbers(min_zoom: int, max_zoom: int) -> Iterator[Tuple[int, int, int]]:
+  return ((x,y,z) for z in range(min_zoom, max_zoom + 1) for (x, y) in product(range(2 ** z), range(2 ** z)))

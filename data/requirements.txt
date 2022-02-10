@@ -4,8 +4,14 @@ certifi==2021.10.8
 click==8.0.3
 click-plugins==1.1.1
 cligj==0.7.2
-numpy==1.21.4
-pyparsing==3.0.6
+morecantile==3.0.3
+numpy==1.21.5
+pipdeptree==2.2.1
+pydantic==1.8.2
+pyparsing==3.0.7
+pyproj==3.3.0
 rasterio==1.2.10
 snuggs==1.4.7
+typing_extensions==4.0.1
 urllib3==1.26.7
+Werkzeug==2.0.2

@@ -1,7 +1,6 @@
-from os import chdir
 import click
 from configs.worldclim import WorldClim
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from configs.tifftiler import TiffTiler
 
 @click.group(chain=True)
 @click.option('--cache', default='cache', type=click.Path(exists=False, file_okay=False, dir_okay=True))
@@ -17,9 +16,10 @@ def cli(ctx, **kwargs):
 def clear(ctx, level):
   wc = WorldClim(**ctx.obj)
   if level != 'cache':
-    wc.clear_build()
+    tt = TiffTiler(wc)
+    tt.clear_build()
   if level != 'build':
-    wc.clear_cache()
+    wc.clear()
 
 @cli.command()
 @click.pass_context
@@ -30,16 +30,8 @@ def download(ctx):
 @cli.command()
 @click.pass_context
 def tile(ctx):
-  wc = WorldClim(**ctx.obj)
-  wc.tiles()
-      
-@cli.command()
-@click.option('--webroot', default='webroot', type=click.Path(exists=False, file_okay=False, dir_okay=True))
-@click.option('--port', default=8000)
-def serve(webroot, port):
-  chdir(webroot)
-  with ThreadingHTTPServer(('', port), SimpleHTTPRequestHandler) as httpd:
-    httpd.serve_forever()
+  tt = TiffTiler(WorldClim(**ctx.obj))
+  tt.tiles()
 
 if __name__ == '__main__':
   cli(obj={})

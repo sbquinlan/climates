@@ -4,21 +4,25 @@
   "author": "squinlan",
   "license": "MIT",
   "scripts": {
-    "start": "parcel src/index.html"
+    "start": "parcel --no-cache src/**/*.html"
   },
   "browserslist": "Chrome >= 56, Safari >= 15, Firefox >= 51, Edge >= 79",
   "dependencies": {
-    "add": "^2.0.6",
     "colormap": "^2.3.2",
     "leaflet": "^1.7.1",
     "ol": "^6.10.0",
     "regl": "^2.1.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^3.3.1",
     "@parcel/transformer-glsl": "^2.0.1",
     "@types/leaflet": "^1.7.7",
     "@types/openlayers": "^4.6.18",
     "browserlist": "^1.0.1",
-    "parcel": "^2.1.1"
+    "compression": "^1.7.4",
+    "parcel": "^2.1.1",
+    "serve-static": "^1.14.2",
+    "typescript": "^4.5.5",
+    "wrangler": "^0.0.16"
   }
 }

@@ -15,5 +15,5 @@ void main() {
   vec4 sampleC = texture2D(texture3, uv);
   vec4 sampleD = texture2D(texture4, uv);
 
-  gl_FragColor = vec4(sampleA.ggg * 5.0, sampleA.a);
+  gl_FragColor = vec4(sampleA.ggg / 200., sampleA.a);
 }
