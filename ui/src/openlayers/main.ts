@@ -1,56 +1,68 @@
 import Map from 'ol/Map';
 import TileLayer from 'ol/layer/Tile';
-import GLLayer from 'ol/layer/WebGLTile';
+import { Uniforms } from 'ol/renderer/webgl/TileLayer.js'
+import { fromLonLat } from 'ol/src/proj';
 import OSM from 'ol/source/OSM';
-import XYZ from 'ol/source/XYZ';
+import DataTileSource from 'ol/source/DataTile';
 import View from 'ol/View';
 
-import colormap from 'colormap';
-
 import "ol/ol.css"
-import { fromLonLat } from 'ol/src/proj';
 
-function getColorStops(name, min, max, steps, reverse) {
-  const delta = (max - min) / (steps - 1);
-  const stops = new Array(steps * 2);
-  const colors = colormap({colormap: name, nshades: steps, format: 'rgba'});
-  if (reverse) {
-    colors.reverse();
-  }
-  for (let i = 0; i < steps; i++) {
-    stops[i * 2] = min + i * delta;
-    stops[i * 2 + 1] = colors[i];
-  }
-  return stops;
-}
+import GLLayer from './CustomWebGLLayer';
+import { genTexture } from '../lib/util';
 
+const textureCount = 1;
+const FRAGMENT_SHADER = `
+  #ifdef GL_FRAGMENT_PRECISION_HIGH
+  precision highp float;
+  #else
+  precision mediump float;
+  #endif
 
-const base_layer = new TileLayer({
-  source: new OSM(),
-});
+  varying vec2 v_textureCoord;
+  uniform float ${Uniforms.TRANSITION_ALPHA};
+  uniform float ${Uniforms.TEXTURE_PIXEL_WIDTH};
+  uniform float ${Uniforms.TEXTURE_PIXEL_HEIGHT};
+  uniform float ${Uniforms.RESOLUTION};
+  uniform float ${Uniforms.ZOOM};
+  uniform sampler2D ${Uniforms.TILE_TEXTURE_ARRAY}[${textureCount}];
 
-const gl_layer = new GLLayer({
-  source: new XYZ({
-    crossOrigin: '',
-    maxZoom: 3,
-    url: "http://localhost:8000/10m_tavg/March/{z}/{x}/{y}.png",
-  }),
-  style: {
-    color: [
-      'interpolate',
-      ['linear'],
-      ['band', 1],
-      ... getColorStops('jet', 0, 0.3, 6, false)
-    ] 
-  },
-  opacity: 1.0,
-});
+  void main() {
+    vec4 color = texture2D(${
+      Uniforms.TILE_TEXTURE_ARRAY
+    }[0],  v_textureCoord);
 
-new Map({
+    if (color.a == 0.0) {
+      discard;
+    }
+
+    gl_FragColor = color;
+    gl_FragColor.rgb *= gl_FragColor.a;
+    gl_FragColor *= ${Uniforms.TRANSITION_ALPHA};
+  }`;
+
+const map = new Map({
   target: 'map',
   layers: [
-    base_layer,
-    gl_layer,
+    new TileLayer({
+      source: new OSM(),
+    }),
+    new GLLayer(
+      {
+        source: new DataTileSource({
+          loader: async (z, x, y) => {
+            const resp = await fetch(`/tiles/wc2.1_10m_tavg/${z}/${x}/${y}.bin`);
+            const arraybuff = await resp.arrayBuffer();
+            return new Float32Array(arraybuff);
+          },
+          bandCount: 12,
+          maxZoom: 1
+        }),
+        opacity: 1.0
+      },
+      {},
+      FRAGMENT_SHADER,
+    ),
   ],
   view: new View({
     center: fromLonLat([0,0]),

@@ -1,7 +1,7 @@
-type TypedArray = Uint8Array | Int8Array
-  | Uint16Array | Int16Array
-  | Uint32Array | Int32Array
-  | Float16Array | Float32Array;
+type TypedArray = Uint8ArrayConstructor | Int8ArrayConstructor
+  | Uint16ArrayConstructor | Int16ArrayConstructor
+  | Uint32ArrayConstructor | Int32ArrayConstructor
+  | Float32ArrayConstructor | Float64ArrayConstructor
 
 function idiv(total: number, divisor: number): number {
   return Math.floor(total / divisor);
@@ -53,7 +53,9 @@ class NumberFormatterSource {
         value.subarray(0, from_bpe - this._extra_bytes),
         this._extra_bytes,
       );
-      chunk[0] = this._converter(new this._from_ctor(this._overflow.buffer)[0])
+      chunk[0] = this._converter(
+        new this._from_ctor(this._overflow.buffer)[0]
+      )
 
       // unfortunate extra copy to put the remaining data
       // on a word boundary. There's no way to really
@@ -68,10 +70,12 @@ class NumberFormatterSource {
     const from = new this._from_ctor(
       value.buffer,
       0,
+      // if there was an extra from_bpe, we already wrote it
+      // to chunk and adjusted the indexing
       idiv(value.byteLength, from_bpe),
     );
-    for (let i = 0; i < chunk.length; i++) {
-      chunk[i] = this._converter(from[i]);
+    for (const [i, from_value] of from.entries()) {
+      chunk[i] = this._converter(from_value);
     }
 
     // save new extra data, this isn't impacted by the copywithin

@@ -1,8 +1,9 @@
+#version 300 es
 uniform mat4 projectionMatrix;
 uniform mat4 modelViewMatrix;
 
-attribute vec2 position;
-varying vec2 vUv;
+in vec2 position;
+out vec2 vUv;
 
 void main() {
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 0.0, 1.0);
