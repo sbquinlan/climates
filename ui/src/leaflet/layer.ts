@@ -91,24 +91,13 @@ class GLRenderer {
 
   async render(
     tiles: { [key: string]: ArrayBufferView },
-    target: HTMLCanvasElement,
-  ): Promise<HTMLCanvasElement> {
+  ): Promise<ImageData> {
     for (const [name, tile] of Object.entries(tiles)) {
       this.textureObjects[name].subimage(tile);
     }
     this.command();
-
-    const tile_context = target.getContext('2d');
-    if (tile_context === null) {
-      throw new Error('Tile canvas 2D context is null.');
-    }
-    tile_context.clearRect(0, 0, target.width, target.height);
-    tile_context.drawImage(
-      this.canvas,
-      0, 0, this.canvas.width, this.canvas.height, 
-      0, 0, target.width, target.height,
-    );
-    return target;
+    return this.canvas.getContext('2d')
+      .getImageData(0, 0, this.canvas.width, this.canvas.height);
   }
 }
 
@@ -155,9 +144,9 @@ export default class GLLayer extends L.GridLayer {
       Object.entries(this.layers).map(
         ([name, layer]) => layer.fetchTexture(coords).then((tile) => [name, tile])
       )
-    ).then(
-      entries => this.renderer.render(Object.fromEntries(entries), tile_canvas)
-    ) .then(_ => done(undefined, tile_canvas))
+    ) .then(entries => this.renderer.render(Object.fromEntries(entries)))
+      .then(img => tile_canvas.getContext('2d').putImageData(img, 0, 0))
+      .then(_ => done(null, tile_canvas))
       .catch(done);
 		return tile_canvas;
 	}
