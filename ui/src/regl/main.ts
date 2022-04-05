@@ -12,7 +12,7 @@ Promise.all([
     'webgl', 
     { preserveDrawingBuffer: true, premultipliedAlpha: false }
   );
-  gl = debug(gl)
+//  gl = debug(gl)
   const regl = REGL({ gl, extensions: ['WEBGL_color_buffer_float', 'OES_texture_float'] });
   const [temp, prec] = buffers.map(
     data => regl.texture({
