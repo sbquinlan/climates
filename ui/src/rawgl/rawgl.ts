@@ -1,4 +1,4 @@
-import { debug, typed_array_for_type, range, make_array, CtorOf } from '../lib/util';
+import { debug, typed_array_for_type, range, make_array } from '../lib/util';
 
 export default function factory(gl: WebGL2RenderingContext) {
   // gl = debug(gl);
@@ -82,7 +82,7 @@ export default function factory(gl: WebGL2RenderingContext) {
   class Program {
     private program: WebGLProgram;
 
-    private textures: Map<number, Texture> = new Map(
+    private textures: Map<number, Texture | null> = new Map(
       [... range(gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS))].map(
         (slot) => [gl.TEXTURE0 + slot, null]
       )
@@ -95,34 +95,34 @@ export default function factory(gl: WebGL2RenderingContext) {
     private readonly attribLookup: Map<string, VariableRecord<number>> = new Map();
 
     constructor(vert: string, frag: string) {
-      this.program = gl.createProgram();
+      this.program = gl.createProgram()!;
       gl.attachShader(this.program, this.createShader(gl.VERTEX_SHADER, vert));
       gl.attachShader(this.program, this.createShader(gl.FRAGMENT_SHADER, frag));
       gl.linkProgram(this.program);
 
       if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
-        const msg = gl.getProgramInfoLog(this.program);
+        const msg = gl.getProgramInfoLog(this.program)!;
         gl.deleteProgram(this.program);
         throw new Error(msg);
       }
 
       for (const info of this.activeUniforms()) {
-        const loc = gl.getUniformLocation(this.program, info.name);
-        this.uniformLookup.set(info.name, { info, loc });
+        const loc = gl.getUniformLocation(this.program, info!.name)!;
+        this.uniformLookup.set(info!.name, { info: info!, loc });
       }
       for (const info of this.activeAttributes()) {
-        const loc = gl.getAttribLocation(this.program, info.name);
-        this.attribLookup.set(info.name, { info, loc });
+        const loc = gl.getAttribLocation(this.program, info!.name)!;
+        this.attribLookup.set(info!.name, { info: info!, loc });
       }
     }
 
     private createShader(type: number, source: string): WebGLShader {
-      const shader = gl.createShader(type);
+      const shader = gl.createShader(type)!;
       gl.shaderSource(shader, source);
       gl.compileShader(shader);
   
       if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        const msg = gl.getShaderInfoLog(shader);
+        const msg = gl.getShaderInfoLog(shader)!;
         gl.deleteShader(shader)
         throw new Error(msg);
       }
@@ -134,13 +134,13 @@ export default function factory(gl: WebGL2RenderingContext) {
       for (const i of range(n)) yield gl.getActiveUniform(this.program, i);
     }
 
-    private findTexture(tex: Texture): number {
+    private findTexture(tex: Texture | null): number | undefined {
       for (const [slot, texture] of this.textures) {
         if (texture === tex) {
           return slot;
         }
       }
-      return null;
+      return undefined;
     }
 
     public setUniforms(uniforms: NamedVariables) {
@@ -316,7 +316,7 @@ export default function factory(gl: WebGL2RenderingContext) {
       private readonly format: [number, number, number], 
       data?: ArrayBufferView | ArrayBuffer
     ) {
-      const [internalFormat, texel_format, texel_type] = format;
+      const [internalFormat, _texel_format, texel_type] = format;
       const array_ctor = typed_array_for_type(gl, texel_type);
       if (!data) {
         data = new array_ctor(width * height * (TEXTURE_CHANNELS[internalFormat] ?? 1));
@@ -324,7 +324,7 @@ export default function factory(gl: WebGL2RenderingContext) {
         data = new array_ctor(data);
       }
 
-      this.tex = gl.createTexture();
+      this.tex = gl.createTexture()!;
       gl.bindTexture(gl.TEXTURE_2D, this.tex);
       gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4)
 
@@ -380,12 +380,12 @@ export default function factory(gl: WebGL2RenderingContext) {
       public readonly internalFormat: number, 
     ) {
       super();
-      this.rbo = gl.createRenderbuffer();
+      this.rbo = gl.createRenderbuffer()!;
       gl.bindRenderbuffer(gl.RENDERBUFFER, this.rbo)
       gl.renderbufferStorage(gl.RENDERBUFFER, internalFormat, width, height);
     }
 
-    bind(attachment) {
+    bind(attachment: number) {
       gl.bindRenderbuffer(gl.RENDERBUFFER, this.rbo);
       gl.framebufferRenderbuffer(
         gl.FRAMEBUFFER, attachment,
@@ -398,7 +398,7 @@ export default function factory(gl: WebGL2RenderingContext) {
     private fbo: WebGLFramebuffer;
 
     constructor(private readonly renderbuffers: Renderbuffer[]) {
-      this.fbo = gl.createFramebuffer();
+      this.fbo = gl.createFramebuffer()!;
       gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
       this.renderbuffers.map(
         (attachment, idx) => {
@@ -415,7 +415,7 @@ export default function factory(gl: WebGL2RenderingContext) {
     read(
       attachment: number, 
       x: number = 0, y: number = 0, 
-      width: number = null, height: number = null,
+      width?: number | undefined, height?: number | undefined,
     ): ArrayBufferView {
       this.bind();
       const buffer = this.renderbuffers[attachment];
@@ -445,7 +445,7 @@ export default function factory(gl: WebGL2RenderingContext) {
     ) { super(); }
 
     bind(): WebGLBuffer {
-      const buff = gl.createBuffer();
+      const buff = gl.createBuffer()!;
       gl.bindBuffer(gl.ARRAY_BUFFER, buff);
       gl.bufferData(gl.ARRAY_BUFFER, this.value, gl.STATIC_DRAW);
       return buff;
@@ -486,7 +486,7 @@ export default function factory(gl: WebGL2RenderingContext) {
     ) { super(); }
     
     bind(program: Program): WebGLVertexArrayObject {
-      const vao = gl.createVertexArray();
+      const vao = gl.createVertexArray()!;
       gl.bindVertexArray(vao);
       program.setAttributes(this.attributes);
       return vao;

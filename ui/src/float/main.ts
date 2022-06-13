@@ -16,7 +16,7 @@ async function main() {
   const gl = canvas.getContext(
     'webgl2', 
     { preserveDrawingBuffer: true, premultipliedAlpha: false }
-  );
+  )!;
   gl.getExtension('EXT_color_buffer_float');
   gl.getExtension('OES_standard_derivatives');
 
@@ -43,15 +43,15 @@ async function main() {
   gl.texStorage2D(gl.TEXTURE_2D, 1, internalFormat, 3 * radius, radius);
   gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 3 * radius, radius, texel_format, texel_type, prec, 0);
 
-  const vert = gl.createShader(gl.VERTEX_SHADER);
+  const vert = gl.createShader(gl.VERTEX_SHADER)!;
   gl.shaderSource(vert, vert_source);
   gl.compileShader(vert);
 
-  const frag = gl.createShader(gl.FRAGMENT_SHADER);
+  const frag = gl.createShader(gl.FRAGMENT_SHADER)!;
   gl.shaderSource(frag, frag_source);
   gl.compileShader(frag);
 
-  const program = gl.createProgram();
+  const program = gl.createProgram()!;
   gl.attachShader(program, vert);
   gl.attachShader(program, frag);
   gl.linkProgram(program);
@@ -95,7 +95,7 @@ async function main() {
   );
   gl.uniform1i(
     gl.getUniformLocation(program, 'littleEndian'),
-    littleEndian as number,
+    Number(littleEndian),
   )
   gl.uniform1i(
     gl.getUniformLocation(program, 'temp'),

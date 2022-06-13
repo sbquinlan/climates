@@ -19,7 +19,7 @@ export function getTransformMatrix(
 }
 
 // https://www.khronos.org/registry/webgl/specs/latest/2.0/#TEXTURE_TYPES_FORMATS_FROM_DOM_ELEMENTS_TABLE
-export function typed_array_for_type(gl, type: number): CtorOf<ArrayBufferView> {
+export function typed_array_for_type(gl: WebGL2RenderingContext, type: number): CtorOf<ArrayBufferView> {
   switch(type) {
     case gl.BYTE:
       return Int8Array;
@@ -62,7 +62,7 @@ export async function genTexture(uri: string, ctor: CtorOf<ArrayBufferView> = Fl
 }
 
 // generic js helpers
-export function* range(n) { let i = 0; while (i < n) yield i++; }
+export function* range(n: number) { let i = 0; while (i < n) yield i++; }
 export function mapValues<TObj, Tout>(
   obj: TObj, 
   lambda: (a: TObj[keyof TObj]) => Tout
@@ -76,18 +76,20 @@ export function mapValues<TObj, Tout>(
 
 // special
 
-export function debug<Tthing>(class_inst: Tthing): Tthing {
-  function getAllFunctions(inst) {
+export function debug<Tthing extends Object>(class_inst: Tthing): Tthing {
+  function getAllFunctions(inst: any) {
     const props = [];
     let curr = inst;
     do {
       props.push(... Object.getOwnPropertyNames(curr));
     } while (curr = Object.getPrototypeOf(curr))
-    return props.filter((prop, i, arr) => (typeof inst[prop] == 'function'))
+    return props.filter((prop, _i, _arr) => (typeof inst[prop] == 'function'))
   }
   for (const method of getAllFunctions(class_inst)) {
+    // @ts-ignore
     const temp = class_inst[method]
-    class_inst[method] = (... rest) => {
+    // @ts-ignore being hacky
+    class_inst[method] = (... rest: any[]) => {
       console.log(method, ... rest);
       return temp.call(... arguments, ... rest);
     }

@@ -7,7 +7,6 @@ import rawgl_shader from '../shaders/koppen/shader.frag'
 import regl_shader from '../shaders/koppen/float.frag'
 import RawglRenderer from './RawglLayer';
 import ReglRenderer from './ReglLayer';
-import { makeInverse } from 'ol/transform';
 
 const map = L.map('map', {
   center: [0, 0],
@@ -17,7 +16,7 @@ const map = L.map('map', {
 const tilesize = 256;
 const attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 const temp = new DataTileLayer(
-  '/asint8/wc2.1_10m_tavg/{z}/{x}/{y}.bin',
+  '/data/wc2.1_10m_tavg/{z}/{x}/{y}.bin',
   { },
   tilesize,
   tilesize,
@@ -25,7 +24,7 @@ const temp = new DataTileLayer(
   12,
 );
 const prec = new DataTileLayer(
-  '/asint8/wc2.1_10m_prec/{z}/{x}/{y}.bin',
+  '/data/wc2.1_10m_prec/{z}/{x}/{y}.bin',
   { },
   tilesize,
   tilesize,

@@ -1,0 +1,7 @@
+name = "numberformatter"
+main = "src/index.ts"
+compatibility_date = "2022-06-05"
+route = "data.cincoptimo.com"
+
+[dev]
+  host = "data.cincoptimo.com"

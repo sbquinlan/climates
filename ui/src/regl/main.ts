@@ -5,13 +5,13 @@ import vert_source from '../shaders/shader.vert'
 import frag_source from '../shaders/koppen/float.frag'
 
 Promise.all([
-  genTexture("/tiles/wc2.1_10m_tavg/1/0/0.bin"),
-  genTexture("/tiles/wc2.1_10m_prec/1/0/0.bin")
+  genTexture("/data/wc2.1_10m_tavg/1/0/0.bin"),
+  genTexture("/data/wc2.1_10m_prec/1/0/0.bin")
 ]).then((buffers) => {
   let gl = (document.getElementById('rendertarget') as HTMLCanvasElement).getContext(
     'webgl', 
     { preserveDrawingBuffer: true, premultipliedAlpha: false }
-  );
+  )!;
 //  gl = debug(gl)
   const regl = REGL({ gl, extensions: ['WEBGL_color_buffer_float', 'OES_texture_float'] });
   const [temp, prec] = buffers.map(

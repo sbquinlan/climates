@@ -8,26 +8,26 @@ const littleEndian = isLittleEndian();
 async function main() {
   const radius = 256;
   const [temp, prec] = await Promise.all([
-    genTexture("/asint8/wc2.1_10m_tavg/0/0/0.bin"),
-    genTexture("/asint8/wc2.1_10m_prec/0/0/0.bin")
+    genTexture("/data/wc2.1_10m_tavg/0/0/0.bin?bitout=int8"),
+    genTexture("/data/wc2.1_10m_prec/0/0/0.bin?bitout=int8"),
   ]);
 
   const canvas: HTMLCanvasElement = document.getElementById('rendertarget') as HTMLCanvasElement
   let gl = canvas.getContext(
     'webgl2', 
     { preserveDrawingBuffer: true, premultipliedAlpha: false }
-  );
+  )!;
   gl.getExtension('EXT_color_buffer_float');
   gl = debug(gl);
   
   const format = [gl.RGB32F, gl.RGB, gl.FLOAT];
   const [internalFormat, texel_format, texel_type] = format;
   
-  const vert = gl.createShader(gl.VERTEX_SHADER);
+  const vert = gl.createShader(gl.VERTEX_SHADER)!;
   gl.shaderSource(vert, vert_source);
   gl.compileShader(vert);
   
-  const frag = gl.createShader(gl.FRAGMENT_SHADER);
+  const frag = gl.createShader(gl.FRAGMENT_SHADER)!;
   gl.shaderSource(frag, frag_source);
   gl.compileShader(frag);
 
@@ -38,7 +38,7 @@ async function main() {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   gl.texStorage2D(gl.TEXTURE_2D, 1, internalFormat, radius, radius);
-  gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, radius, radius, texel_format, texel_type, new Float32Array(radius * radius * 3), 0);
+  gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 3*radius, radius, texel_format, texel_type, new Float32Array(radius * radius * 3), 0);
 
   const tex2 = gl.createTexture();
   gl.activeTexture(gl.TEXTURE1);
@@ -50,7 +50,7 @@ async function main() {
   gl.texStorage2D(gl.TEXTURE_2D, 1, internalFormat, radius, radius);
   gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, radius, radius, texel_format, texel_type, new Float32Array(radius * radius * 3), 0);
   
-  const program = gl.createProgram();
+  const program = gl.createProgram()!;
   gl.attachShader(program, vert);
   gl.attachShader(program, frag);
   gl.linkProgram(program);

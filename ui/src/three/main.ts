@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { genTexture, isLittleEndian  } from '../lib/util'
+import { isLittleEndian } from '../lib/util'
 import RasterDataLoader from './RasterDataLoader'
 
 import vertexShader from '../shaders/shader3.vert'
@@ -18,8 +18,8 @@ const scene = (new THREE.Scene()).add(
     new THREE.RawShaderMaterial({ 
       uniforms: {
         littleEndian: { value: isLittleEndian() },
-        temp: { value: loader.load('/tiles/wc2.1_10m_tavg/1/0/0.bin', (t) => { renderer.render( scene, ortho ); }) },
-        prec: { value: loader.load('/tiles/wc2.1_10m_prec/1/0/0.bin', (t) => { renderer.render( scene, ortho ); }) },
+        temp: { value: loader.load('/data/wc2.1_10m_tavg/1/0/0.bin', (t) => { renderer.render( scene, ortho ); }) },
+        prec: { value: loader.load('/data/wc2.1_10m_prec/1/0/0.bin', (t) => { renderer.render( scene, ortho ); }) },
       },
       vertexShader,
       fragmentShader,
@@ -35,7 +35,7 @@ const ortho = new THREE.OrthographicCamera(
 ortho.position.set(0, 0, 10);
 ortho.lookAt(scene.position);
 
-const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('rendertarget') });
+const renderer = new THREE.WebGLRenderer({ canvas: <HTMLCanvasElement> document.getElementById('rendertarget') });
 renderer.setSize(tilesize, tilesize)
 renderer.setViewport(0, 0, tilesize, tilesize);
 renderer.render( scene, ortho );
