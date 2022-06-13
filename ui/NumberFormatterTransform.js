@@ -1,10 +1,6 @@
 
-function idiv(total, divisor) {
-  return Math.floor(total / divisor);
-}
-
 function numberformatter(
-  from_ctor,
+  from_ctor: DataViewConstructor,
   to_ctor,
   converter,
 ) {
@@ -25,7 +21,7 @@ function numberformatter(
       // output chunk
       let chunk = new to_ctor(
         // number of whole bpe's we have in output
-        idiv(value.byteLength + extra_bytes, from_bpe)
+        Math.floor(value.byteLength + extra_bytes / from_bpe)
       );
 
       // extra data from last chunk
@@ -50,7 +46,7 @@ function numberformatter(
       const from = new from_ctor(
         value.buffer,
         0,
-        idiv(value.byteLength, from_bpe),
+        Math.floor(value.byteLength / from_bpe),
       )
       for (const [i, from_value] of from.entries()) {
         chunk[i] = converter(from_value)

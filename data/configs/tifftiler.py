@@ -27,7 +27,7 @@ HEADERLESS_TIFF = {
 
 @attrs
 class TiffTiler(AssetFactory[TBand]):
-  _tms: TileMatrixSet = attrib(default=morecantile.tms.get('WebMercatorQuad'))
+  _tms: TileMatrixSet = attrib(default=morecantile.tms.get('WGS1984Quad'))
   # should get this off the _tms but it's not available.
   _tilesize: int = attrib(default=256)
   _dtype: str = attrib(default='float32')

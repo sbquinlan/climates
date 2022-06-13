@@ -1,3 +1,4 @@
+from asyncio import subprocess
 import click
 from configs.worldclim import WorldClim
 from configs.tifftiler import TiffTiler
@@ -32,6 +33,22 @@ def download(ctx):
 def tile(ctx):
   tt = TiffTiler(WorldClim(**ctx.obj))
   tt.tiles()
+
+@cli.command()
+@click.pass_context
+def upload(ctx):
+  subprocess.run(
+    [
+      'b2',
+      'sync',
+      '--excludeAllSymlinks',
+      '--excludeRegex', '\'\..*\'',
+      '--includeRegex', '\'.*\.bin$\'',
+      ctx['output'], 'b2://raster/',
+    ]
+    stdout=subprocess.STDOUT,
+    stderr=subprocess.STDOUT
+  )
 
 if __name__ == '__main__':
   cli(obj={})

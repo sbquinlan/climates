@@ -1,2 +1,1 @@
-// Climate Regions
-
+import * as gee from '@google/earthengine';

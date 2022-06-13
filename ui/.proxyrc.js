@@ -3,21 +3,20 @@ const { compose, PassThrough } = require('stream')
 const { pipeline } = require('stream/promises')
 
 const { isHttpError } = require('http-errors');
-
-const NumberFormatter = require('./NumberFormatterTransform');
 const { 
-  stream_static,
+  streamStatic,
   compression, 
   byterange 
-} = require('./serve_static/index.js');
+} = require('stream-static');
+const NumberFormatter = require('./NumberFormatterTransform');
 
-function web_stream(stream) {
+function web_stream(node_stream) {
   return compose(
-    async function* (source, signal) {
+    async function* (source, _) {
       for await (const chunk of source) yield new Uint8Array(chunk)
     },
-    stream,
-    async function* (source, signal) {
+    node_stream,
+    async function* (source, _) {
       for await (const chunk of source) yield Buffer.from(chunk.buffer)
     }
   )
@@ -34,7 +33,7 @@ function static_compression(root, converter = null) {
     }
     let stream;
     try {
-      stream = await stream_static(resolve(root), req, res);
+      stream = await streamStatic(resolve(root), req, res);
       if (req.method === 'HEAD') {
         stream.destroy();
         return;
@@ -59,17 +58,13 @@ function static_compression(root, converter = null) {
   };
 }
 
-function clamp(min, val, max) {
-  return Math.max(min, Math.min(val, max))
-}
-
 function float_to_byte(req, res) {
   res.setHeader('Content-Length', Math.floor(res.getHeader('Content-Length') / 4))
   return web_stream(
     NumberFormatter(
       Float32Array,
       Int8Array,
-      (x) => clamp(-128, x, 127),
+      (x) => Math.max(-128, Math.min(val, 127)),
     ),
   )
 }
@@ -84,7 +79,6 @@ module.exports = function (app) {
     '/asint8',
     static_compression('../data/webroot/', float_to_byte)
   );
-
   app.use((_, res, next) => {
     res.setHeader('Cache-control', 'no-cache');
     next();
