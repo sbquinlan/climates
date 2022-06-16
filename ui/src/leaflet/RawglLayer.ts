@@ -3,10 +3,9 @@ import * as L from 'leaflet'
 import factory from '../rawgl/rawgl';
 import vert from '../shaders/shader3.vert';
 import { isLittleEndian, getTransformMatrix, mapValues } from '../lib/util';
+import { DataTileLayer, GLRenderer } from "./layer";
 
-import type { DataTileLayer } from "./layer";
-
-export default class RawglRenderer {
+export default class RawglRenderer extends GLRenderer {
   private readonly canvas: HTMLCanvasElement;
   private readonly textureObjects: { [name: string]: any };
   private command: () => void;
@@ -16,13 +15,14 @@ export default class RawglRenderer {
     layers: { [name: string]: DataTileLayer },
     options: { fragmentShader: string, uniforms?: {} }
   ) {
+    super(viewport, layers);
     this.canvas = L.DomUtil.create('canvas');
     Object.assign(this.canvas, { width: viewport.x, height: viewport.y });
 
-    const gl = this.canvas.getContext(
+    let gl = this.canvas.getContext(
       'webgl2',
       { preserveDrawingBuffer: true, premultipliedAlpha: false }
-    );
+    )!;
     gl.getExtension('EXT_color_buffer_float')
     const { rawgl, buffer, texture, vao } = factory(gl)
 
@@ -46,10 +46,10 @@ export default class RawglRenderer {
       }),
       uniforms: {
         ... (options.uniforms ?? {}),
+        ... this.textureObjects,
         littleEndian: isLittleEndian(),
         projectionMatrix: getTransformMatrix(2, 2, -1, -1),
         modelViewMatrix: getTransformMatrix(1, 1, 0, 0),
-        ... this.textureObjects
       },
     });
   }

@@ -41,7 +41,7 @@ class TiffTiler(AssetFactory[TBand]):
           # i hate that somebody doesn't just write this logic by itself. so annoying
           # i'm biasing towards height here because i had to pick one? idk
           maxzoom = self._tms.zoom_for_res(self._tms.xy_bbox.top * 2 / src.height)
-          for tile in self._tms.tiles(*self._tms.bbox, range(maxzoom), truncate=True):
+          for tile in self._tms.tiles(*self._tms.bbox, range(maxzoom + 1), truncate=True):
             dwin = vrt.window(*self._tms.xy_bounds(tile))
             data = vrt.read(window=dwin, out_shape=(src.count, ts, ts))
 

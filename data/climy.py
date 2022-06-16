@@ -45,9 +45,9 @@ def upload(ctx):
       '--excludeRegex', '\'\..*\'',
       '--includeRegex', '\'.*\.bin$\'',
       ctx['output'], 'b2://raster/',
-    ]
+    ],
     stdout=subprocess.STDOUT,
-    stderr=subprocess.STDOUT
+    stderr=subprocess.STDOUT,
   )
 
 if __name__ == '__main__':
