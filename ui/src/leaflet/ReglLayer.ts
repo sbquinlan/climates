@@ -3,9 +3,9 @@ import REGL, { Texture2D } from 'regl';
 
 import vert from '../shaders/shader.vert'
 import { getTransformMatrix, mapValues } from '../lib/util';
-import type { DataTileLayer } from "./layer";
+import { DataTileLayer, GLRenderer } from "./layer";
 
-export default class ReglRenderer {
+export default class ReglRenderer extends GLRenderer {
   private readonly canvas: HTMLCanvasElement;
   private readonly textureObjects: { [name: string]: Texture2D };
   private command: () => void;
@@ -15,13 +15,14 @@ export default class ReglRenderer {
     layers: { [name: string]: DataTileLayer },
     options: { fragmentShader: string, uniforms?: {} }
   ) {
+    super(viewport, layers);
     this.canvas = L.DomUtil.create('canvas');
     Object.assign(this.canvas, { width: viewport.x, height: viewport.y });
 
     const gl = this.canvas.getContext(
       'webgl',
       { preserveDrawingBuffer: true, premultipliedAlpha: false }
-    );
+    )!;
     const regl = REGL({ gl, extensions: ['WEBGL_color_buffer_float', 'OES_texture_float'] });
 
     this.textureObjects = mapValues(
@@ -35,8 +36,7 @@ export default class ReglRenderer {
 
     this.command = regl({
       viewport: { width: viewport.x, height: viewport.y },
-      vert, 
-      frag: options.fragmentShader,
+      vert, frag: options.fragmentShader,
       vao: regl.vao({ 
         attributes: [
           [ [0, 0], [0, 1], [1, 0],
@@ -47,9 +47,9 @@ export default class ReglRenderer {
       attributes: { position: 0 },
       uniforms: {
         ... (options.uniforms ?? {}),
+        ... this.textureObjects,
         projectionMatrix: getTransformMatrix(2, 2, -1, -1),
         modelViewMatrix: getTransformMatrix(1, 1, 0, 0),
-        ... this.textureObjects
       },
     });
   }
