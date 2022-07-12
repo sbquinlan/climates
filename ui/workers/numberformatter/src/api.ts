@@ -1,9 +1,9 @@
 import StreamNumberFormatter from "./formatter";
 import type { TypedArray, TypedArrayConstructor } from "./formatter";
 
-function toReadableStream<TChunk>(
+function toReadableStream<TChunk extends ArrayBufferView>(
   iter: AsyncGenerator<TChunk>
-): ReadableStream<TChunk> {
+): ReadableStream {
   return new ReadableStream({
     async pull(controller) {
       const { value, done } = await iter.next();
@@ -30,14 +30,14 @@ type BitFormatName = keyof typeof BIT_FORMAT;
 
 export default function api(original: URL): {
   uri: URL;
-  transform: (body: ReadableStream<Uint8Array>) => ReadableStream<Uint8Array>;
+  transform: (body: ReadableStream) => ReadableStream;
 } {
   const output_ctor: TypedArrayConstructor<TypedArray> | undefined =
     original.searchParams.has("bitout")
       ? BIT_FORMAT[<BitFormatName>original.searchParams.get("bitout")]
       : undefined;
 
-  const uri = new URL(original);
+  const uri = new URL(original.toString());
   uri.pathname = `file/raster${uri.pathname}`;
   uri.search = "";
   return {

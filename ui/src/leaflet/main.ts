@@ -8,7 +8,7 @@ import RawglRenderer from './RawglLayer';
 
 const map = L.map('map', {
   center: [0, 0],
-  zoom: 0,
+  zoom: 3,
   zoomDelta: 0.10,
   zoomSnap: 0.10,
   wheelDebounceTime: 100,
@@ -47,8 +47,7 @@ map.addLayer(
       { fragmentShader: rawgl_shader },
     ),
     {
-      minZoom: 0,
-      maxZoom: 1,
+      maxNativeZoom: 3,
       opacity: 0.5
     }
   )

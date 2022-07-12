@@ -81,7 +81,8 @@ class TiffTiler(AssetFactory[TBand]):
         vrt_transform = from_bounds(w, s, e, n, vrt_width, vrt_height)
 
         with WarpedVRT(src, transform=vrt_transform, height=vrt_height, width=vrt_width, crs=self._tms.rasterio_crs, resampling=Resampling.average) as vrt:
-          for tile in self._tms.tiles(*self._tms.bbox, range(maxzoom), truncate=True):
+          # range isn't inclusive, but maxzoom is.
+          for tile in self._tms.tiles(*self._tms.bbox, range(maxzoom + 1), truncate=True):
             dwin = vrt.window(*self._tms.xy_bounds(tile))
             data = vrt.read(window=dwin, out_shape=(src.count, ts, ts))
 

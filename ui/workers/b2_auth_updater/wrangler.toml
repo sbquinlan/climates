@@ -1,16 +1,23 @@
-name = "dev_numberformatter"
+name = "dev_b2_auth_updater"
 main = "src/index.ts"
 compatibility_date = "2022-06-05"
+workers_dev = true
 # safe to expose per https://github.com/cloudflare/wrangler/issues/209
 account_id = "b4a945f731ab6428c24401483f6f27c0"
-route = "data.cincoptimo.com"
 
 kv_namespaces = [
   { binding = "B2_AUTH", id = "810fc5333e18486384996aacd67d64ff", preview_id = "810fc5333e18486384996aacd67d64ff" }
 ]
 
+[triggers]
+crons = ["0 */6 * * *"]
+
+# The necessary secrets are:
+# - B2_READ_RASTER_ID
+# - B2_READ_RASTER_KEY
+
 [env.production]
-name = "prod_numberformatter"
+name = "prod_b2_auth_updater"
 kv_namespaces = [
   { binding = "B2_AUTH", id = "edb8ba906a424548a7edd036bd827051", preview_id = "edb8ba906a424548a7edd036bd827051" }
 ]

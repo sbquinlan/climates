@@ -65,6 +65,7 @@ class CoallescingPromiseCache<Tcachekey, Targs extends unknown[], Tresult> {
     const cache_key = this.cacheKey(... args);
     
     if (!this.cache.has(cache_key)) {
+      // console.log('draw', cache_key);
       this.cache.set(cache_key, this.promiseMaker(... args));
     } else {
       const [first, ... _rest] = this.cache.keys();
@@ -74,6 +75,7 @@ class CoallescingPromiseCache<Tcachekey, Targs extends unknown[], Tresult> {
         this.cache.delete(cache_key);
         this.cache.set(cache_key, temp);
       }
+      // console.log('cached', cache_key);
     }
 
     // cache needs to be trimmed

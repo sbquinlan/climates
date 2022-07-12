@@ -19,7 +19,7 @@
     "@types/three": "^0.141.0",
     "glslify": "^7.1.1",
     "jest": "^28.1.1",
-    "leaflet": "^1.8.0",
+    "leaflet": "file:../../Leaflet",
     "prettier": "2.6.2",
     "regl": "^2.1.0",
     "stream-static": "^1.0.1",
@@ -27,6 +27,6 @@
     "ts-jest": "^28.0.4",
     "typescript": "^4.5.4",
     "vite": "^2.9.9",
-    "wrangler": "file:/Users/squinlan/Documents/wrangler2/packages/wrangler"
+    "wrangler": "file:../../wrangler2/packages/wrangler"
   }
 }
